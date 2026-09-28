@@ -477,14 +477,13 @@ function petSVG(who, mood){
           : `<path d="M50 67.7v2.6M50 70.3q-2.6 2.8-5 .8M50 70.3q2.6 2.8 5 .8" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`}
       ${cheeks(26, 74, 68)}</g>`;
   }
-  if(who === 'takkun'){ // 白ベースにグレー模様のおかめインコ
-    const crest = [['M47 24C44 14 40 7 33 3','#F2D35B'], ['M50 23C50 13 49 6 45 1','#F7E7A6'], ['M53 24C55 15 57 9 55 4','#B9BAC0']];
+  if(who === 'takkun'){ // 顔まわりとトサカが白・体が薄グレーのおかめインコ
+    const crest = [['M47 24C44 14 40 7 33 3','#FFFFFF'], ['M50 23C50 13 49 6 45 1','#FFFFFF'], ['M53 24C55 15 57 9 55 4','#FFFFFF']];
     return `
       ${crest.map(([d,c]) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="7.4" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`).join('')}
-      <path d="M50 20C78 20 90 38 90 58c0 17-15 27-40 27S10 75 10 58C10 38 22 20 50 20z" fill="#FBFAF6" ${S3}/>
-      <path d="M14 67c2-8 9-12 15-10 4 2 3 9-1 13-5 5-11 4-14-3zM66 28c7 2 12 7 14 13-4 1-9-1-12-5-2-2-3-5-2-8zM73 73c4-2 8-1 9 2-1 4-5 6-9 5-2-2-2-5 0-7zM20 36c3-3 7-4 9-2 1 3-2 6-6 7-3 0-4-2-3-5z" fill="#B9BAC0"/>
-      <path d="M50 23C68 23 77 34 77 49c0 13-11 22-27 22S23 62 23 49c0-15 9-26 27-26z" fill="#F8E7A0"/>
-      <path d="M17 64q3 7 10 10M83 64q-3 7-10 10" fill="none" stroke="#C9CACF" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M50 20C78 20 90 38 90 58c0 17-15 27-40 27S10 75 10 58C10 38 22 20 50 20z" fill="#D5D6DC" ${S3}/>
+      <path d="M50 23C68 23 77 34 77 49c0 13-11 22-27 22S23 62 23 49c0-15 9-26 27-26z" fill="#FFFFFF"/>
+      <path d="M17 64q3 7 10 10M83 64q-3 7-10 10" fill="none" stroke="#B3B4BB" stroke-width="2.2" stroke-linecap="round"/>
       <circle cx="29" cy="60" r="8.2" fill="#F08A5B"/><circle cx="71" cy="60" r="8.2" fill="#F08A5B"/>
       ${eyes(mood, 38, 62, 47, 4.3, '#1A1414')}
       <path d="M45.5 55.5q4.5-3.5 9 0q-.8 6.5-4.5 9.5q-3.7-3-4.5-9.5z" fill="#D8B3A4" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
