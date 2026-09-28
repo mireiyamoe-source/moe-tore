@@ -126,13 +126,13 @@ nav.tabs .ic{padding:2px 10px;display:grid;place-items:center;transition:backgro
 .cele.on{display:grid}
 .cele .box{text-align:center;padding:26px 24px;max-width:330px;width:86%;background:#fff;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
 @keyframes pop{from{transform:scale(.4);opacity:0}}
-.cele .ttl{font-size:28px;font-weight:900;color:var(--pink-d);-webkit-text-stroke:.5px var(--ink);margin:8px 0 4px}
+.cele .ttl{font-size:24px;white-space:nowrap;font-weight:900;color:var(--pink-d);-webkit-text-stroke:.5px var(--ink);margin:8px 0 4px}
 .cele .ex{font-weight:900;font-size:16px}
 .cele .val{font-size:48px;font-weight:900;line-height:1.2}
 .cele .prev{font-size:13px;color:var(--sub);font-weight:700;margin-bottom:16px}
 .cele .trio{display:flex;justify-content:center;gap:2px;margin:0 -10px}
 .cele .mochi{display:inline-block;animation:jump .7s ease-in-out infinite alternate}
-.cele .mochi:nth-child(2){animation-delay:.23s}.cele .mochi:nth-child(3){animation-delay:.46s}
+.cele .mochi:nth-child(2){animation-delay:.18s}.cele .mochi:nth-child(3){animation-delay:.36s}.cele .mochi:nth-child(4){animation-delay:.54s}
 .hero .mochi{display:flex;flex-direction:column;align-items:center;cursor:pointer}
 .pname{font-size:11px;font-weight:900;background:#fff;border:1.5px solid var(--ink);border-radius:999px;padding:0 7px;margin-top:-2px}
 .bubble .who{display:block;font-size:11px;color:var(--pink-d);font-weight:900;margin-bottom:1px}
@@ -422,9 +422,10 @@ const PETS = {
   kui:   {name:'くいちゃん'},
   pochi: {name:'ぽちちゃん'},
   jiji:  {name:'ジジちゃん'},
+  takkun:{name:'たっくん'},
 };
 const PET_IDS = Object.keys(PETS);
-const petOfDay = () => PET_IDS[Math.floor(Date.now()/864e5) % 3];
+const petOfDay = () => PET_IDS[Math.floor(Date.now()/864e5) % PET_IDS.length];
 // 目：ふつう／にっこり／おやすみ
 function eyes(mood, lx, rx, y, r, col, hap=INK){
   if(mood === 'happy') return `<path d="M${lx-5} ${y+1}q5-7 10 0M${rx-5} ${y+1}q5-7 10 0" fill="none" stroke="${hap}" stroke-width="3.2" stroke-linecap="round"/>`;
@@ -475,6 +476,19 @@ function petSVG(who, mood){
       ${H ? `<path d="M45.5 69.5q4.5 6.5 9 0z" fill="#E77F93" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`
           : `<path d="M50 67.7v2.6M50 70.3q-2.6 2.8-5 .8M50 70.3q2.6 2.8 5 .8" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`}
       ${cheeks(26, 74, 68)}</g>`;
+  }
+  if(who === 'takkun'){ // 白ベースにグレー模様のおかめインコ
+    const crest = [['M47 24C44 14 40 7 33 3','#F2D35B'], ['M50 23C50 13 49 6 45 1','#F7E7A6'], ['M53 24C55 15 57 9 55 4','#B9BAC0']];
+    return `
+      ${crest.map(([d,c]) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="7.4" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`).join('')}
+      <path d="M50 20C78 20 90 38 90 58c0 17-15 27-40 27S10 75 10 58C10 38 22 20 50 20z" fill="#FBFAF6" ${S3}/>
+      <path d="M14 67c2-8 9-12 15-10 4 2 3 9-1 13-5 5-11 4-14-3zM66 28c7 2 12 7 14 13-4 1-9-1-12-5-2-2-3-5-2-8zM73 73c4-2 8-1 9 2-1 4-5 6-9 5-2-2-2-5 0-7zM20 36c3-3 7-4 9-2 1 3-2 6-6 7-3 0-4-2-3-5z" fill="#B9BAC0"/>
+      <path d="M50 23C68 23 77 34 77 49c0 13-11 22-27 22S23 62 23 49c0-15 9-26 27-26z" fill="#F8E7A0"/>
+      <path d="M17 64q3 7 10 10M83 64q-3 7-10 10" fill="none" stroke="#C9CACF" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="29" cy="60" r="8.2" fill="#F08A5B"/><circle cx="71" cy="60" r="8.2" fill="#F08A5B"/>
+      ${eyes(mood, 38, 62, 47, 4.3, '#1A1414')}
+      <path d="M45.5 55.5q4.5-3.5 9 0q-.8 6.5-4.5 9.5q-3.7-3-4.5-9.5z" fill="#D8B3A4" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+      ${H ? `<path d="M47.5 60.5q2.5 2 5 0" fill="none" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/>` : ''}`;
   }
   // jiji：黒目がちで ぽっちゃりのキジトラ
   return `
@@ -543,7 +557,7 @@ function renderHome(){
     return `<div class="catlabel"><i style="background:${CATS[k].c}"></i>${CATS[k].label}</div><div class="grid">${list.map(tile).join('')}</div>`;
   }).join('');
 }
-$('#hero-mochi').addEventListener('click', () => { heroPet = PET_IDS[(PET_IDS.indexOf(heroPet)+1) % 3]; renderHome(); });
+$('#hero-mochi').addEventListener('click', () => { heroPet = PET_IDS[(PET_IDS.indexOf(heroPet)+1) % PET_IDS.length]; renderHome(); });
 $('#cat-chips').addEventListener('click', e => { const b = e.target.closest('[data-cat]'); if(b){ curCat = b.dataset.cat; renderHome(); } });
 $('#ex-area').addEventListener('click', e => { const b = e.target.closest('[data-ex]'); if(b) openSheet(b.dataset.ex); });
 document.addEventListener('click', e => {
@@ -875,7 +889,7 @@ function celebrate(ex, v, prev){
     conf += `<i class="cf" style="left:${Math.random()*100}%;background:${cols[i%5]};animation-duration:${2+Math.random()*2.2}s;animation-delay:${Math.random()*.8}s;border-radius:${i%3?3:50}%"></i>`;
   }
   c.innerHTML = conf + `<div class="card box">
-      <div class="trio">${PET_IDS.map(p => `<span class="mochi">${pet(p,'happy',78)}</span>`).join('')}</div>
+      <div class="trio">${PET_IDS.map(p => `<span class="mochi">${pet(p,'happy',66)}</span>`).join('')}</div>
       <div class="ttl">じこベスト こうしん！</div>
       <div class="ex">${esc(ex.name)}</div>
       <div class="val">${fmt(ex,v)}</div>
@@ -923,7 +937,7 @@ function checkBadges(silent){
   if(got.length){ save(); if(document.querySelector('#b-area')) renderBadges(); if(!silent) got.forEach((b,i) => enqueue(() => showBadge(b, i))); }
 }
 function showBadge(b, i){
-  const c = $('#cele'), who = PET_IDS[(PET_IDS.indexOf(petOfDay()) + i) % 3];
+  const c = $('#cele'), who = PET_IDS[(PET_IDS.indexOf(petOfDay()) + i) % PET_IDS.length];
   c.innerHTML = `<div class="card box">
     <div class="gotb">${pet(who,'happy',112)}<span class="medal">${medal(b,false,60)}</span></div>
     <div class="ttl" style="margin-top:14px">バッジ ゲット！</div>
