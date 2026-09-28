@@ -544,9 +544,32 @@ function catIcon(k){
 
 /* ========== 画面：きろく ========== */
 let curCat = 'all';
-const MSG_NONE = ['きょうは なにする？','ちょっとだけでも えらいよ','1回だけでも きろくしよ','まってたよ〜'];
+// ===== はげましの言葉 =====
+const MSG_NONE = [
+  'きょうも いっしょに がんばろうね','ちょっとだけでも えらいよ','1回だけでも やったら 100てん！','まってたよ〜',
+  'きょうは どれにする？','むりしないでね。できる分だけで いいよ','ストレッチだけでも すごいことだよ','ひらいてくれて うれしい！',
+  'いっしょに やろ〜','からだ うごかすと きもちいいよ','5分だけ やってみよっか','きのうの自分より ちょっとだけ',
+  'やる気が なくても だいじょうぶ。はじめたら 出てくるよ','ゆっくりで いいよ。ずっと おうえんしてる','きょうの自分を だいじにしてね',
+  '深呼吸して、さあ いこう！','まずは 背のびから どう？','きょうも いっしょに いられて うれしいな',
+];
+const MSG_DONE = [
+  'きょうも えらい！','やったね！ さすが！','がんばったね…！ かっこいい','自分を いっぱい ほめてあげてね',
+  'えらすぎる〜！','その調子！ からだが よろこんでるよ','きょうの自分に はなまる！','ちゃんと やるの ほんとに すごい',
+  'あしたの自分が ありがとうって いってるよ','がんばる すがた、すてきだったよ','いっしょに できて うれしい！',
+  'きょうは ゆっくり やすんでね','まいにち ちょっとずつ つよくなってるよ','できたね！ ハイタッチ！','だいすき！ よく がんばりました',
+];
+const MSG_TIME = h =>
+  h < 5  ? ['夜おそくまで おつかれさま','ねる前に かるく のびる？'] :
+  h < 10 ? ['おはよう！ 朝から えらいね','おはよ〜！ きょうも いい日に なるよ','朝の体操で しゃきっと しよ！'] :
+  h < 15 ? ['こんにちは！ ひと休みに どう？','おひるも がんばってて えらいね'] :
+  h < 19 ? ['おかえり〜！ きょうも おつかれさま','夕方の ひとがんばり、いこっか'] :
+           ['きょうも いちにち おつかれさま','ねる前に ストレッチ どう？ よく ねむれるよ','夜の しずかな時間も すてきだね'];
+const STREAK_MSG = n => n >= 30 ? `${n}日れんぞく！ もう しゅうかんだね。ほんとに すごい` :
+  n >= 7 ? `${n}日れんぞく！ 1週間いじょう つづいてるよ` : `${n}日れんぞく！ いい流れ〜`;
+const CRY = {kui:'わん', pochi:'ぷぅ', jiji:'にゃ', takkun:'ぴぃ'};
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+const withCry = (t, p) => Math.random() < .35 ? `${t} ${CRY[p] || ''}` : t;
 let heroPet = petOfDay();
-const MSG_DONE = ['きょうも えらい！','やったね！ そのちょうし','がんばったね…！','いいかんじ〜！'];
 function renderHome(){
   const now = new Date(), W = '日月火水木金土';
   $('#today-date').textContent = `${now.getMonth()+1}月${now.getDate()}日（${W[now.getDay()]}）`;
@@ -555,10 +578,12 @@ function renderHome(){
   const st = streak();
   const done = todays.length > 0;
   $('#hero-mochi').innerHTML = pet(heroPet, done ? 'happy' : 'normal') + `<span class="pname">${PETS[heroPet].name}</span>`;
-  const pick = a => a[now.getDate() % a.length];
-  $('#hero-msg').innerHTML = `<span class="who">${PETS[heroPet].name}</span>` + (done
-    ? `${pick(MSG_DONE)}${st >= 2 ? `<br><span class="muted" style="font-size:13px">${st}日れんぞく中だよ</span>` : ''}`
-    : (st > 0 ? `きのうまで ${st}日れんぞく！<br><span class="muted" style="font-size:13px">きょうもつなげよう</span>` : pick(MSG_NONE)));
+  const sub = t => `<br><span class="muted" style="font-size:13px">${t}</span>`;
+  let msg;
+  if(done) msg = withCry(rnd(MSG_DONE), heroPet) + (st >= 2 ? sub(STREAK_MSG(st)) : '');
+  else if(st > 0) msg = withCry(rnd(MSG_TIME(now.getHours()).concat(MSG_NONE)), heroPet) + sub(`${st}日つづいてるよ。きょうも つなげよう`);
+  else msg = withCry(rnd(Math.random() < .4 ? MSG_TIME(now.getHours()) : MSG_NONE), heroPet);
+  $('#hero-msg').innerHTML = `<span class="who">${PETS[heroPet].name}</span>` + msg;
   $('#st-streak').innerHTML = `${st}<small>日</small>`;
   $('#st-today').innerHTML = `${new Set(todays.map(l=>l.ex)).size}<small>種目</small>`;
   const ym = tk.slice(0,7);
@@ -906,7 +931,7 @@ function commit(v){
   const tt = S.logs.filter(l => l.ex===ex.id && tsKey(l.ts)===todayKey()).reduce((s,l)=>s+l.v,0);
   if(prev !== null && v > prev) enqueue(() => celebrate(ex, v, prev));
   else if(prev === null) toast(`${mochi('happy',28)}はじめてのきろく！ ${esc(ex.name)} ${fmtT(ex,v)}`);
-  else toast(`${mochi('happy',28)}きろくしたよ！ きょう合計 ${fmtT(ex,tt)}`);
+  else toast(`${mochi('happy',28)}${rnd(['きろくしたよ！','ナイス！','いいね〜！','えらい！','その調子！','かっこいい！','すてき！'])} きょう合計 ${fmtT(ex,tt)}`);
   checkBadges(false);
 }
 
