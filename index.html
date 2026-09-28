@@ -566,9 +566,9 @@ const MSG_TIME = h =>
            ['きょうも いちにち おつかれさま','ねる前に ストレッチ どう？ よく ねむれるよ','夜の しずかな時間も すてきだね'];
 const STREAK_MSG = n => n >= 30 ? `${n}日れんぞく！ もう しゅうかんだね。ほんとに すごい` :
   n >= 7 ? `${n}日れんぞく！ 1週間いじょう つづいてるよ` : `${n}日れんぞく！ いい流れ〜`;
-const CRY = {kui:'わん', pochi:'ぷぅ', jiji:'にゃ', takkun:'ぴぃ'};
+const CRY = {kui:'わん', pochi:'ぴょん', jiji:'にゃ', takkun:'ぴぃ'};
 const rnd = a => a[Math.floor(Math.random() * a.length)];
-const withCry = (t, p) => Math.random() < .35 ? `${t} ${CRY[p] || ''}` : t;
+const withCry = (t, p) => Math.random() < .12 ? `${t} ${CRY[p] || ''}` : t;
 let heroPet = petOfDay();
 function renderHome(){
   const now = new Date(), W = '日月火水木金土';
