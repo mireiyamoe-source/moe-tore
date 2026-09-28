@@ -216,6 +216,17 @@ nav.tabs .ic{padding:2px 10px;display:grid;place-items:center;transition:backgro
 .catlabel .cl-ic{width:26px;height:26px;border-radius:9px;border:1.5px solid var(--ink);display:grid;place-items:center}
 .catlabel .cl-ic svg{width:21px;height:21px}
 
+.hidebox{margin-top:22px;padding:0 16px}
+.hidebox summary{list-style:none;cursor:pointer;padding:14px 0;font-size:14px;font-weight:900;display:flex;align-items:center;gap:6px}
+.hidebox summary::-webkit-details-marker{display:none}
+.hidebox summary:before{content:"▸";transition:transform .2s}
+.hidebox[open] summary:before{transform:rotate(90deg)}
+.hidebox[open]{padding-bottom:14px}
+.hidegrp{font-size:12px;font-weight:900;color:var(--sub);margin:10px 0 6px}
+.hidechips{display:flex;flex-wrap:wrap;gap:6px}
+.hidechips button{padding:6px 11px;border-radius:999px;border:1.5px solid var(--ink);background:#fff;font-size:13px;font-weight:700}
+.hidechips button.off{border-style:dashed;border-color:#C9B6A2;color:#C9B6A2;text-decoration:line-through;background:#FBF6EF}
+
 /* settings */
 .form{padding:16px}
 .form label{display:block;font-size:13px;font-weight:900;margin:12px 0 6px}
@@ -315,6 +326,12 @@ nav.tabs .ic{padding:2px 10px;display:grid;place-items:center;transition:backgro
     <h2><span class="dot" style="background:var(--lav-d)"></span>じぶんで追加した種目</h2>
     <div class="card list" id="custom-list"></div>
 
+    <details class="card hidebox">
+      <summary>表示する種目をえらぶ <span class="muted" id="hide-count"></span></summary>
+      <p class="note" style="margin:0 0 10px">タップすると「かくす／もどす」が切りかわります。かくしても、記録は消えません。</p>
+      <div id="hide-list"></div>
+    </details>
+
     <h2><span class="dot" style="background:var(--blue-d)"></span>バックアップ</h2>
     <div class="card form">
       <div class="btns">
@@ -377,12 +394,13 @@ function load(){
   return {custom:[], logs:[]};
 }
 let S = load();
-function norm(){ S.badges = S.badges || {}; S.voice = S.voice || {on:true, every:10}; }
+function norm(){ S.hidden = S.hidden || []; S.badges = S.badges || {}; S.voice = S.voice || {on:true, every:10}; }
 norm();
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
 
 const allEx = () => DEF_EX.concat(S.custom);
+const visEx = () => allEx().filter(e => !S.hidden.includes(e.id));
 const exById = id => allEx().find(e => e.id === id);
 
 /* ========== ユーティリティ ========== */
@@ -611,7 +629,7 @@ function renderHome(){
   };
   const keys = curCat === 'all' ? Object.keys(CATS) : [curCat];
   $('#ex-area').innerHTML = keys.map(k => {
-    const list = allEx().filter(e => e.cat === k);
+    const list = visEx().filter(e => e.cat === k);
     if(!list.length) return '';
     return `<div class="catlabel"><span class="cl-ic" style="background:${CATS[k].c}">${catIcon(k)}</span>${CATS[k].label}</div><div class="grid">${list.map(tile).join('')}</div>`;
   }).join('');
@@ -1062,9 +1080,9 @@ $('#cal-grid').addEventListener('click', e => { const b = e.target.closest('[dat
 /* ========== 画面：グラフ ========== */
 let gEx = null;
 function renderGraph(){
-  const used = allEx().filter(e => logsOf(e.id).length);
-  if(!gEx || !exById(gEx)) gEx = (used[0] || allEx()[0]).id;
-  $('#g-chips').innerHTML = allEx().map(e => `<button class="chip ${gEx===e.id?'on':''}" data-g="${e.id}" style="${logsOf(e.id).length?'':'opacity:.45'}">${esc(e.name)}</button>`).join('');
+  const used = visEx().filter(e => logsOf(e.id).length);
+  if(!gEx || !exById(gEx) || S.hidden.includes(gEx)) gEx = (used[0] || visEx()[0] || allEx()[0]).id;
+  $('#g-chips').innerHTML = visEx().map(e => `<button class="chip ${gEx===e.id?'on':''}" data-g="${e.id}" style="${logsOf(e.id).length?'':'opacity:.45'}">${esc(e.name)}</button>`).join('');
   const ex = exById(gEx), logs = logsOf(gEx);
   // 1日ごとのベスト
   const byDay = {};
@@ -1149,7 +1167,22 @@ $('#icon-pick').addEventListener('click', e => {
   toast(S.main ? `${pet(S.main,'happy',28)}${PETS[S.main].name}が 相棒になったよ` : `${mochi('happy',28)}毎日ちがう子が 来るよ`);
 });
 applyIcon();
+function renderHide(){
+  const n = S.hidden.filter(id => exById(id)).length;
+  $('#hide-count').textContent = n ? `（${n}こ かくし中）` : '';
+  $('#hide-list').innerHTML = Object.entries(CATS).map(([k,c]) => {
+    const list = allEx().filter(e => e.cat === k); if(!list.length) return '';
+    return `<div class="hidegrp">${c.label}</div><div class="hidechips">${list.map(e => `<button data-hide="${e.id}" class="${S.hidden.includes(e.id)?'off':''}">${esc(e.name)}</button>`).join('')}</div>`;
+  }).join('');
+}
+$('#hide-list').addEventListener('click', e => {
+  const b = e.target.closest('[data-hide]'); if(!b) return;
+  const id = b.dataset.hide;
+  S.hidden = S.hidden.includes(id) ? S.hidden.filter(x => x !== id) : S.hidden.concat(id);
+  save(); renderHome(); renderGraph(); renderHide();
+});
 function renderSet(){
+  renderHide();
   renderIconPick();
   $('#custom-list').innerHTML = S.custom.length ? S.custom.map(e =>
     `<div class="row"><span class="n">${esc(e.name)} <span class="muted" style="font-size:12px">${CATS[e.cat].label}・${e.type==='reps'?'回数':'秒'}</span></span><button class="del" data-rmex="${e.id}" aria-label="けす">×</button></div>`
